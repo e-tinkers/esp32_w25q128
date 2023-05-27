@@ -2,8 +2,8 @@
  *  Based on https://github.com/nopnop2002/esp-idf-w25q64
  *  esp-idf reference: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/spi_master.html
  *  
- *  W25Q128JVSQ      ESP32
- *  =======================
+ *  W25Q128JVSQ      ESP32 SPI
+ *  ==========================
  *  1 CS             GPIO5
  *  2 MISO           GPIO19
  *  3 WP             3.3V
@@ -97,15 +97,24 @@ void setup() {
   );
 
 
-  // Get JEDEC ID
-  uint8_t jid[3];
-  ret = W25Q128_readManufacturer(&dev, jid);
+  // Get Manufacture Code and Chip Capacity
+  uint8_t mcode[3];
+  ret = W25Q128_readManufacturer(&dev, mcode);
   if (ret != ESP_OK) {
     Serial.printf("readManufacturer fail %d\n", ret);
     while(1) { vTaskDelay(1); }
   }
-  Serial.printf("readManufacturer : %x-%x-%x\n\n", jid[0], jid[1], jid[2]);
+  Serial.printf("readManufacturer: %x %x\n", mcode[0], mcode[1]);
 
+  // Get JDEEC Info
+  uint8_t jid[4];
+  ret = W25Q128_readJEDEC(&dev, jid);
+  if (ret != ESP_OK) {
+    Serial.printf("readJEDEC Code fail %d\n", ret);
+    while(1) { vTaskDelay(1); }
+  }
+  Serial.printf("JEDEC Code %x %x %x\n\n", jid[0], jid[1], jid[2]);
+  
   // Read 256 byte data from Address=0
   uint8_t rbuf[256];
   int len;

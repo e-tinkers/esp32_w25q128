@@ -29,7 +29,7 @@ extern "C" {
 #define HOST_ID SPI3_HOST  // the new name of VSPI
 #endif
 
-static const int SPI_Frequency = 20000000;
+static const int SPI_Frequency = 10000000;
 
 void W25Q128_dump(const char *id, int ret, uint8_t *data, int len)
 {
@@ -149,10 +149,32 @@ esp_err_t W25Q128_readUniqieID(W25Q128_t * dev, uint8_t * id)
 }
 
 //
+// Get Manufacture Code (Manufacture, Capacity)
+// id(out):Stores 2 bytes of Manufacture, Capacity
+//
+esp_err_t W25Q128_readManufacturer(W25Q128_t * dev, uint8_t * id)
+{
+  spi_transaction_t SPITransaction;
+  uint8_t data[6];
+  memset(data, 0, 6);
+  data[0] = CMD_MANUFACTURER_ID;
+  data[3] = 0x00;
+  memset( &SPITransaction, 0, sizeof( spi_transaction_t ) );
+  SPITransaction.length = 6 * 8;
+  SPITransaction.tx_buffer = data;
+  SPITransaction.rx_buffer = data;
+  esp_err_t ret = spi_device_transmit( dev->_SPIHandle, &SPITransaction );
+  assert(ret == ESP_OK);
+  if(_DEBUG_) W25Q128_dump("readManufacturer", ret, data, 6);
+  memcpy(id, &data[4], 2);
+  return ret ;
+}
+
+//
 // Get JEDEC ID(Manufacture, Memory Type,Capacity)
 // id(out):Stores 3 bytes of Manufacture, Memory Type, Capacity
 //
-esp_err_t W25Q128_readManufacturer(W25Q128_t * dev, uint8_t * id)
+esp_err_t W25Q128_readJEDEC(W25Q128_t * dev, uint8_t * id)
 {
 	spi_transaction_t SPITransaction;
 	uint8_t data[4];
@@ -163,7 +185,7 @@ esp_err_t W25Q128_readManufacturer(W25Q128_t * dev, uint8_t * id)
 	SPITransaction.rx_buffer = data;
 	esp_err_t ret = spi_device_transmit( dev->_SPIHandle, &SPITransaction );
 	assert(ret == ESP_OK);
-	if(_DEBUG_)W25Q128_dump("readManufacturer", ret, data, 4);
+	if(_DEBUG_)W25Q128_dump("readJEDEC", ret, data, 4);
 	memcpy(id, &data[1], 3);
 	return ret ;
 }
