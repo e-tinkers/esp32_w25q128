@@ -2,16 +2,18 @@
  *  Based on https://github.com/nopnop2002/esp-idf-w25q64
  *  esp-idf reference: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/spi_master.html
  *  
- *  W25Q128JVSQ      ESP32 SPI
- *  ==========================
- *  1 CS             GPIO5
- *  2 MISO           GPIO19
- *  3 WP             3.3V
- *  4 GND            GND
- *  5 MOSI           GPIO23
- *  6 SCK|           GPIO18
- *  7 HOLD           3.3V
- *  8 VCC            3.3V
+ *  W25Q128JVSQ      ESP32 SPI/DSPI    ESP32 QSPI
+ *  =============================================
+ *  1 CS             GPIO5             GPIO5
+ *  2 MISO/IO1       GPIO19            GPIO19
+ *  3 WP/IO2         3.3V              GPIO22
+ *  4 GND            GND               GND
+ *  5 MOSI/IO0       GPIO23            GPIO23
+ *  6 SCK|           GPIO18            GPIO18
+ *  7 HOLD/IO3       3.3V              GPIO21
+ *  8 VCC            3.3V              3.3V
+ *  
+ *  Note: the GPIO pins are based on ESP32 SPI2 (VSPI) pin configuration
  *  
  * ----------------------------------------------------------------------------------------------------------
  * |                                                     NOR FLASH                                          |
@@ -66,7 +68,7 @@ void setup() {
   W25Q128_init(&dev);
 
   esp_err_t ret;
-  
+
   // Get Status Register1
   uint8_t reg1;
   ret = W25Q128_readStatusReg1(&dev, &reg1);
@@ -96,16 +98,6 @@ void setup() {
      uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6], uid[7]
   );
 
-
-  // Get Manufacture Code and Chip Capacity
-  uint8_t mcode[3];
-  ret = W25Q128_readManufacturer(&dev, mcode);
-  if (ret != ESP_OK) {
-    Serial.printf("readManufacturer fail %d\n", ret);
-    while(1) { vTaskDelay(1); }
-  }
-  Serial.printf("readManufacturer: %x %x\n", mcode[0], mcode[1]);
-
   // Get JDEEC Info
   uint8_t jid[4];
   ret = W25Q128_readJEDEC(&dev, jid);
@@ -113,8 +105,37 @@ void setup() {
     Serial.printf("readJEDEC Code fail %d\n", ret);
     while(1) { vTaskDelay(1); }
   }
-  Serial.printf("JEDEC Code %x %x %x\n\n", jid[0], jid[1], jid[2]);
+  Serial.printf("JEDEC Code %x %x %x\n", jid[0], jid[1], jid[2]);
+
+
+  // Get Manufacture Code and Chip Capacity
+  uint8_t mcode0[3];
+  ret = W25Q128_readManufacturer(&dev, STD_IO, mcode0);
+  if (ret != ESP_OK) {
+    Serial.printf("readManufacturer(SPI) fail %d\n", ret);
+    while(1) { vTaskDelay(1); }
+  }
+  Serial.printf("readManufacturer(SPI): %x %x\n\n", mcode0[0], mcode0[1]);
+
+//  // Get Manufacture Code and Chip Capacity with DSPI
+//  uint8_t mcode1[3];
+//  ret = W25Q128_readManufacturer(&dev, DUAL_IO, mcode1);
+//  if (ret != ESP_OK) {
+//    Serial.printf("readManufacturer(DSPI) fail %d\n", ret);
+//    while(1) { vTaskDelay(1); }
+//  }
+//  Serial.printf("readManufacturer(DSPI): %x %x\n", mcode1[0], mcode1[1]);
   
+//  // Get Manufacture Code and Chip Capacity with QSPI
+//  uint8_t mcode2[3];
+//  ret = W25Q128_readManufacturer(&dev, QUAD_IO, mcode2);
+//  if (ret != ESP_OK) {
+//    Serial.printf("readManufacturer(QSPI) fail %d\n", ret);
+//    while(1) { vTaskDelay(1); }
+//  }
+//  Serial.printf("readManufacturer(QSPI): %x %x\n", mcode2[0], mcode2[1]);
+
+
   // Read 256 byte data from Address=0
   uint8_t rbuf[256];
   int len;

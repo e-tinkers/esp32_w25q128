@@ -13,7 +13,7 @@ extern "C" {
 
 #include "w25q128.h"
 
-#define TAG "W25Q128"
+#define TAG "w25q128"
 #define _DEBUG_	0
 
 // SPI Stuff
@@ -21,7 +21,9 @@ extern "C" {
 #define CONFIG_MISO_GPIO 19
 #define CONFIG_MOSI_GPIO 23
 #define CONFIG_SCLK_GPIO 18
-#define CONFIG_CS_GPIO 5
+#define CONFIG_CS_GPIO   5
+#define CONFIG_QUADWP_GPIO  22
+#define CONFIG_QUADHD_GPIO  21
 
 #if CONFIG_SPI2_HOST
 #define HOST_ID SPI2_HOST  // the new name of HSPI
@@ -29,7 +31,7 @@ extern "C" {
 #define HOST_ID SPI3_HOST  // the new name of VSPI
 #endif
 
-static const int SPI_Frequency = 10000000;
+static const int SPI_Frequency = 20000000;
 
 void W25Q128_dump(const char *id, int ret, uint8_t *data, int len)
 {
@@ -49,7 +51,9 @@ void W25Q128_init(W25Q128_t * dev)
   ESP_LOGI(TAG, "MOSI_GPIO=%d", CONFIG_MOSI_GPIO);
   ESP_LOGI(TAG, "SCLK_GPIO=%d", CONFIG_SCLK_GPIO);
   ESP_LOGI(TAG, "CS_GPIO=%d", CONFIG_CS_GPIO);
-
+  ESP_LOGI(TAG, "IO2_GPIO=%d", CONFIG_QUADWP_GPIO);  
+  ESP_LOGI(TAG, "IO3_GPIO=%d", CONFIG_QUADHD_GPIO);
+  
 	esp_err_t ret;
 
 	//gpio_pad_select_gpio( CONFIG_CS_GPIO );
@@ -57,34 +61,43 @@ void W25Q128_init(W25Q128_t * dev)
 	gpio_set_direction( CONFIG_CS_GPIO, GPIO_MODE_OUTPUT );
 	gpio_set_level( CONFIG_CS_GPIO, 0 );
 
-	spi_bus_config_t spi_bus_config = {
-		.sclk_io_num = CONFIG_SCLK_GPIO,
-		.mosi_io_num = CONFIG_MOSI_GPIO,
-		.miso_io_num = CONFIG_MISO_GPIO,
-		.quadwp_io_num = -1,
-		.quadhd_io_num = -1
-	};
+//	spi_bus_config_t spi_bus_config = {
+//		.sclk_io_num = CONFIG_SCLK_GPIO,  
+//		.mosi_io_num = CONFIG_MOSI_GPIO,
+//		.miso_io_num = CONFIG_MISO_GPIO,
+//		.quadwp_io_num = -1,
+//		.quadhd_io_num = -1, 
+//	};
+  spi_bus_config_t spi_bus_config = {
+    .sclk_io_num = CONFIG_SCLK_GPIO,
+    .data0_io_num = CONFIG_MOSI_GPIO,
+    .data1_io_num = CONFIG_MISO_GPIO,
+    .data2_io_num = -1, // CONFIG_QUADWP_GPIO,
+    .data3_io_num = -1, // CONFIG_QUADHD_GPIO
+  };
 
 	ret = spi_bus_initialize( HOST_ID, &spi_bus_config, SPI_DMA_CH_AUTO );
-	if(_DEBUG_)ESP_LOGI(TAG, "spi_bus_initialize=%d",ret);
+	ESP_LOGI(TAG, "spi_bus_initialize=%d",ret);
 	assert(ret==ESP_OK);
 
 	spi_device_interface_config_t devcfg;
 	memset( &devcfg, 0, sizeof( spi_device_interface_config_t ) );
 	devcfg.clock_speed_hz = SPI_Frequency;
   devcfg.spics_io_num = CONFIG_CS_GPIO;
-  devcfg.queue_size = 7;
+  devcfg.queue_size = 9;
   devcfg.mode = 0;
 
 	spi_device_handle_t handle;
 	ret = spi_bus_add_device( HOST_ID, &devcfg, &handle);
-	if(_DEBUG_)ESP_LOGI(TAG, "spi_bus_add_device=%d",ret);
+	ESP_LOGI(TAG, "spi_bus_add_device=%d",ret);
 	assert(ret==ESP_OK);
 	dev->_SPIHandle = handle;
-	dev->_4bmode = false;
+
 #if CONFIG_4B_MODE
 	ESP_LOGW(TAG, "4-Byte Address Mode");
 	dev->_4bmode = true;
+#else
+  dev->_4bmode = false;
 #endif
 }
 
@@ -152,21 +165,51 @@ esp_err_t W25Q128_readUniqieID(W25Q128_t * dev, uint8_t * id)
 // Get Manufacture Code (Manufacture, Capacity)
 // id(out):Stores 2 bytes of Manufacture, Capacity
 //
-esp_err_t W25Q128_readManufacturer(W25Q128_t * dev, uint8_t * id)
+esp_err_t W25Q128_readManufacturer(W25Q128_t * dev, uint8_t spi_mode, uint8_t * id)
 {
   spi_transaction_t SPITransaction;
-  uint8_t data[6];
-  memset(data, 0, 6);
-  data[0] = CMD_MANUFACTURER_ID;
-  data[3] = 0x00;
+  uint8_t data[9];  // max 6 bytes for spi, and 9 bytes for qspi
+  memset(data, 0, 9);
+  uint8_t n = 0;
+  
+  switch (spi_mode) {
+    case STD_IO:
+      data[0] = CMD_MANUFACTURER_ID;
+      n = 6;
+      break;
+    case DUAL_IO:
+      data[0] = CMD_MANUFACTURER_ID_DIO; 
+      data[4] = 0xF5;
+      n = 7;
+      break;
+    case QUAD_IO:
+      data[0] = CMD_MANUFACTURER_ID_QIO; 
+	  data[4] = 0xF5;
+      n = 9;
+      break;
+  }
+  
   memset( &SPITransaction, 0, sizeof( spi_transaction_t ) );
-  SPITransaction.length = 6 * 8;
+  SPITransaction.length = n * 8;
   SPITransaction.tx_buffer = data;
   SPITransaction.rx_buffer = data;
+  
   esp_err_t ret = spi_device_transmit( dev->_SPIHandle, &SPITransaction );
   assert(ret == ESP_OK);
-  if(_DEBUG_) W25Q128_dump("readManufacturer", ret, data, 6);
-  memcpy(id, &data[4], 2);
+  W25Q128_dump("readManufacturer", ret, data, 9);
+  
+  switch (spi_mode) {
+    case STD_IO:
+      memcpy(id, &data[4], 2);
+      break;
+    case DUAL_IO:
+      memcpy(id, &data[5], 2);
+      break;
+	case QUAD_IO:
+	  memcpy(id, &data[7], 2);
+      break;
+  }
+
   return ret ;
 }
 
@@ -185,7 +228,7 @@ esp_err_t W25Q128_readJEDEC(W25Q128_t * dev, uint8_t * id)
 	SPITransaction.rx_buffer = data;
 	esp_err_t ret = spi_device_transmit( dev->_SPIHandle, &SPITransaction );
 	assert(ret == ESP_OK);
-	if(_DEBUG_)W25Q128_dump("readJEDEC", ret, data, 4);
+	if(_DEBUG_) W25Q128_dump("readJEDEC", ret, data, 4);
 	memcpy(id, &data[1], 3);
 	return ret ;
 }

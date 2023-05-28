@@ -25,7 +25,7 @@ extern "C" {
 #define CMD_CNT_READ_MODE_RST   0xFF // Unimplemented
 #define CMD_RELEASE_PDOWN_ID    0xAB // Unimplemented
 #define CMD_MANUFACTURER_ID     0x90
-#define CMD_MANUFACTURER_ID_DIO 0x92  // Unimplemented
+#define CMD_MANUFACTURER_ID_DIO 0x92
 #define CMD_MANUFACTURER_ID_QIO 0x94
 #define CMD_READ_UNIQUE_ID      0x4B
 #define CMD_JEDEC_ID            0x9f
@@ -48,6 +48,11 @@ typedef struct {
 	spi_device_handle_t _SPIHandle;
 } W25Q128_t;
 
+enum {
+  STD_IO,   // standard SPI mode
+  DUAL_IO,  // Dual SPI mode
+  QUAD_IO   // Quad SPI mode
+};
 
 void W25Q128_dump(const char *id, int ret, uint8_t *data, int len);
 void W25Q128_init(W25Q128_t * dev);
@@ -55,7 +60,7 @@ bool W25Q128_IsBusy(W25Q128_t * dev);
 esp_err_t W25Q128_readStatusReg1(W25Q128_t * dev, uint8_t * reg1);
 esp_err_t W25Q128_readStatusReg2(W25Q128_t * dev, uint8_t * reg2);
 esp_err_t W25Q128_readUniqieID(W25Q128_t * dev, uint8_t * id);
-esp_err_t W25Q128_readManufacturer(W25Q128_t * dev, uint8_t * id);
+esp_err_t W25Q128_readManufacturer(W25Q128_t * dev, uint8_t spi_mode, uint8_t * id);
 esp_err_t W25Q128_readJEDEC(W25Q128_t * dev, uint8_t * id);
 esp_err_t W25Q128_powerDown(W25Q128_t * dev);
 esp_err_t W25Q128_WriteEnable(W25Q128_t * dev);
