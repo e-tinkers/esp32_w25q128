@@ -17,13 +17,14 @@ extern "C" {
 #define _DEBUG_	0
 
 // SPI Stuff
-#define CONFIG_SPI3_HOST 1
-#define CONFIG_MISO_GPIO 19
-#define CONFIG_MOSI_GPIO 23
-#define CONFIG_SCLK_GPIO 18
-#define CONFIG_CS_GPIO   5
+#define CONFIG_SPI3_HOST    1
+#define CONFIG_MISO_GPIO    19
+#define CONFIG_MOSI_GPIO    23
+#define CONFIG_SCLK_GPIO    18
+#define CONFIG_CS_GPIO      5
 #define CONFIG_QUADWP_GPIO  22
 #define CONFIG_QUADHD_GPIO  21
+#define CONFIG_4B_MODE 0
 
 #if CONFIG_SPI2_HOST
 #define HOST_ID SPI2_HOST  // the new name of HSPI
@@ -61,31 +62,31 @@ void W25Q128_init(W25Q128_t * dev)
 	gpio_set_direction( CONFIG_CS_GPIO, GPIO_MODE_OUTPUT );
 	gpio_set_level( CONFIG_CS_GPIO, 0 );
 
-//	spi_bus_config_t spi_bus_config = {
-//		.sclk_io_num = CONFIG_SCLK_GPIO,  
-//		.mosi_io_num = CONFIG_MOSI_GPIO,
-//		.miso_io_num = CONFIG_MISO_GPIO,
-//		.quadwp_io_num = -1,
-//		.quadhd_io_num = -1, 
-//	};
-  spi_bus_config_t spi_bus_config = {
-    .sclk_io_num = CONFIG_SCLK_GPIO,
-    .data0_io_num = CONFIG_MOSI_GPIO,
-    .data1_io_num = CONFIG_MISO_GPIO,
-    .data2_io_num = -1, // CONFIG_QUADWP_GPIO,
-    .data3_io_num = -1, // CONFIG_QUADHD_GPIO
-  };
+	spi_bus_config_t spi_bus_config = {
+		.sclk_io_num = CONFIG_SCLK_GPIO,  
+		.mosi_io_num = CONFIG_MOSI_GPIO,
+		.miso_io_num = CONFIG_MISO_GPIO,
+		.quadwp_io_num = CONFIG_QUADWP_GPIO,
+		.quadhd_io_num = CONFIG_QUADHD_GPIO,
+    .max_transfer_sz = 512,
+    .flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_NATIVE_PINS 
+	  // .flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_QUAD  // for QSPI
+	};
 
 	ret = spi_bus_initialize( HOST_ID, &spi_bus_config, SPI_DMA_CH_AUTO );
-	ESP_LOGI(TAG, "spi_bus_initialize=%d",ret);
+	ESP_LOGI(TAG, "spi_bus_initialize=%d", ret);
 	assert(ret==ESP_OK);
 
-	spi_device_interface_config_t devcfg;
-	memset( &devcfg, 0, sizeof( spi_device_interface_config_t ) );
-	devcfg.clock_speed_hz = SPI_Frequency;
-  devcfg.spics_io_num = CONFIG_CS_GPIO;
-  devcfg.queue_size = 9;
-  devcfg.mode = 0;
+	spi_device_interface_config_t devcfg = {
+	  .clock_speed_hz = SPI_Frequency,  // same as APB_CLK_FREQ / (10 - SPI_MASTER_20M)
+	  .spics_io_num = CONFIG_CS_GPIO,
+	  .queue_size = 7,                  // maximum handle 7 transactions
+	  .mode = 0,                        // SPI MODE0
+    .command_bits = 8,
+    .dummy_bits = 4,
+    .address_bits = 32,
+    //.flags = SPI_DEVICE_HALFDUPLEX
+	};
 
 	spi_device_handle_t handle;
 	ret = spi_bus_add_device( HOST_ID, &devcfg, &handle);
@@ -223,9 +224,12 @@ esp_err_t W25Q128_readJEDEC(W25Q128_t * dev, uint8_t * id)
 	uint8_t data[4];
 	data[0] = CMD_JEDEC_ID;
 	memset( &SPITransaction, 0, sizeof( spi_transaction_t ) );
+  //SPITransaction.cmd = CMD_JEDEC_ID;
+  //SPITransaction.addr = (uint32_t) 0;
 	SPITransaction.length = 4 * 8;
 	SPITransaction.tx_buffer = data;
 	SPITransaction.rx_buffer = data;
+  SPITransaction.flags = SPI_TRANS_MODE_QIO | SPI_TRANS_MODE_DIOQIO_ADDR;
 	esp_err_t ret = spi_device_transmit( dev->_SPIHandle, &SPITransaction );
 	assert(ret == ESP_OK);
 	if(_DEBUG_) W25Q128_dump("readJEDEC", ret, data, 4);
