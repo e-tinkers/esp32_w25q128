@@ -32,9 +32,7 @@ extern "C"
 #define CMD_JEDEC_ID 0x9f
 
 #define CMD_READ_DATA 0x03
-#define CMD_READ_DATA4B 0x13 // this only available for chip W25Q256 and above (i.e. 32MB onward)
 #define CMD_FAST_READ 0x0B
-#define CMD_FAST_READ4B 0x0C      // this only available for chip W25Q256 and above (i.e. 32MB onward)
 #define CMD_READ_DUAL_OUTPUT 0x3B // Unimplemented
 #define CMD_READ_DUAL_IO 0xBB     // Unimplemented
 #define CMD_READ_QUAD_OUTPUT 0x6B // Unimplemented
@@ -44,18 +42,10 @@ extern "C"
 #define SR1_BUSY_MASK 0x01
 #define SR1_WEN_MASK 0x02
 
-  typedef struct
-  {
+  typedef struct {
     bool _4bmode;
     spi_device_handle_t _SPIHandle;
   } W25Q128_t;
-
-  enum
-  {
-    STD_IO,  // standard SPI mode
-    DUAL_IO, // Dual SPI mode
-    QUAD_IO  // Quad SPI mode
-  };
 
   void W25Q128_dump(const char *id, uint8_t *data, int len);
   void W25Q128_init(W25Q128_t *dev);
