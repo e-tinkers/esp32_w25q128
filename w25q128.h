@@ -60,7 +60,7 @@ bool W25Q128_IsBusy(W25Q128_t * dev);
 esp_err_t W25Q128_readStatusReg1(W25Q128_t * dev, uint8_t * reg1);
 esp_err_t W25Q128_readStatusReg2(W25Q128_t * dev, uint8_t * reg2);
 esp_err_t W25Q128_readUniqieID(W25Q128_t * dev, uint8_t * id);
-esp_err_t W25Q128_readManufacturer(W25Q128_t * dev, uint8_t spi_mode, uint8_t * id);
+esp_err_t W25Q128_readManufacturer(W25Q128_t * dev, uint8_t * id);
 esp_err_t W25Q128_readJEDEC(W25Q128_t * dev, uint8_t * id);
 esp_err_t W25Q128_powerDown(W25Q128_t * dev);
 esp_err_t W25Q128_WriteEnable(W25Q128_t * dev);

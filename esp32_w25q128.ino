@@ -69,34 +69,34 @@ void setup() {
 
   esp_err_t ret;
 
-//  // Get Status Register1
-//  uint8_t reg1;
-//  ret = W25Q128_readStatusReg1(&dev, &reg1);
-//  if (ret != ESP_OK) {
-//    Serial.printf("readStatusReg1 fail %d\n",ret);
-//    while(1) { vTaskDelay(1); }
-//  } 
-//  Serial.printf("readStatusReg1 : %x\n", reg1);
-//  
-//  // Get Status Register2
-//  uint8_t reg2;
-//  ret = W25Q128_readStatusReg2(&dev, &reg2);
-//  if (ret != ESP_OK) {
-//    Serial.printf("readStatusReg2 fail %d\n", ret);
-//    while(1) { vTaskDelay(1); }
-//  }
-//  Serial.printf("readStatusReg2 : %x\n", reg2);
-//
-//  // Get Unique ID
-//  uint8_t uid[8];
-//  ret = W25Q128_readUniqieID(&dev, uid);
-//  if (ret != ESP_OK) {
-//    Serial.printf("readUniqieID fail %d\n", ret);
-//    while(1) { vTaskDelay(1); }
-//  }
-//  Serial.printf("readUniqieID : %x-%x-%x-%x-%x-%x-%x-%x\n",
-//     uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6], uid[7]
-//  );
+  // Get Status Register1
+  uint8_t reg1;
+  ret = W25Q128_readStatusReg1(&dev, &reg1);
+  if (ret != ESP_OK) {
+    Serial.printf("readStatusReg1 fail %d\n",ret);
+    while(1) { vTaskDelay(1); }
+  } 
+  Serial.printf("readStatusReg1 : %x\n", reg1);
+  
+  // Get Status Register2
+  uint8_t reg2;
+  ret = W25Q128_readStatusReg2(&dev, &reg2);
+  if (ret != ESP_OK) {
+    Serial.printf("readStatusReg2 fail %d\n", ret);
+    while(1) { vTaskDelay(1); }
+  }
+  Serial.printf("readStatusReg2 : %x\n", reg2);
+
+  // Get Unique ID
+  uint8_t uid[8];
+  ret = W25Q128_readUniqieID(&dev, uid);
+  if (ret != ESP_OK) {
+    Serial.printf("readUniqieID fail %d\n", ret);
+    while(1) { vTaskDelay(1); }
+  }
+  Serial.printf("readUniqieID : %x-%x-%x-%x-%x-%x-%x-%x\n",
+     uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6], uid[7]
+  );
 
   // Get JDEEC Info
   uint8_t jid[4];
@@ -110,33 +110,14 @@ void setup() {
   Serial.printf("Capacity: %luMbits, %ldMB\n", capacity, capacity/8);
 
 
-//  // Get Manufacture Code and Chip Capacity
-//  uint8_t mcode0[3];
-//  ret = W25Q128_readManufacturer(&dev, STD_IO, mcode0);
-//  if (ret != ESP_OK) {
-//    Serial.printf("readManufacturer(SPI) fail %d\n", ret);
-//    while(1) { vTaskDelay(1); }
-//  }
-//  Serial.printf("readManufacturer(SPI): %x %x\n\n", mcode0[0], mcode0[1]);
-
-//  // Get Manufacture Code and Chip Capacity with DSPI
-//  uint8_t mcode1[3];
-//  ret = W25Q128_readManufacturer(&dev, DUAL_IO, mcode1);
-//  if (ret != ESP_OK) {
-//    Serial.printf("readManufacturer(DSPI) fail %d\n", ret);
-//    while(1) { vTaskDelay(1); }
-//  }
-//  Serial.printf("readManufacturer(DSPI): %x %x\n", mcode1[0], mcode1[1]);
-  
-//  // Get Manufacture Code and Chip Capacity with QSPI
-//  uint8_t mcode2[3];
-//  ret = W25Q128_readManufacturer(&dev, QUAD_IO, mcode2);
-//  if (ret != ESP_OK) {
-//    Serial.printf("readManufacturer(QSPI) fail %d\n", ret);
-//    while(1) { vTaskDelay(1); }
-//  }
-//  Serial.printf("readManufacturer(QSPI): %x %x\n", mcode2[0], mcode2[1]);
-
+  // Get Manufacture Code and Chip Capacity
+  uint8_t mcode0[3];
+  ret = W25Q128_readManufacturer(&dev, mcode0);
+  if (ret != ESP_OK) {
+    Serial.printf("readManufacturerfail %d\n", ret);
+    while(1) { vTaskDelay(1); }
+  }
+  Serial.printf("readManufacturer: %x %x\n\n", mcode0[0], mcode0[1]);
 
   // Read 256 byte data from Address=0
   uint8_t rbuf[256];
