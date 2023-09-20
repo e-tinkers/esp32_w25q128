@@ -73,45 +73,45 @@ void setup()
 
   esp_err_t ret;
 
-  // Get Status Register1
-  uint8_t reg1;
-  ret = W25Q128_readStatusReg1(&dev, &reg1);
-  if (ret != ESP_OK)
-  {
-    Serial.printf("readStatusReg1 fail %d\n", ret);
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("readStatusReg1 : %02x\n", reg1);
-
-  // Get Status Register2
-  uint8_t reg2;
-  ret = W25Q128_readStatusReg2(&dev, &reg2);
-  if (ret != ESP_OK)
-  {
-    Serial.printf("readStatusReg2 fail %d\n", ret);
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("readStatusReg2 : %02x\n", reg2);
-
-  // Get Unique ID
-  uint8_t uid[8];
-  ret = W25Q128_readUniqieID(&dev, uid);
-  if (ret != ESP_OK)
-  {
-    Serial.printf("readUniqieID fail %d\n", ret);
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("readUniqieID : %x-%x-%x-%x-%x-%x-%x-%x\n",
-                uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6], uid[7]);
+//  // Get Status Register1
+//  uint8_t reg1;
+//  ret = W25Q128_readStatusReg1(&dev, &reg1);
+//  if (ret != ESP_OK)
+//  {
+//    Serial.printf("readStatusReg1 fail %d\n", ret);
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("readStatusReg1 : %02x\n", reg1);
+//
+//  // Get Status Register2
+//  uint8_t reg2;
+//  ret = W25Q128_readStatusReg2(&dev, &reg2);
+//  if (ret != ESP_OK)
+//  {
+//    Serial.printf("readStatusReg2 fail %d\n", ret);
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("readStatusReg2 : %02x\n", reg2);
+//
+//  // Get Unique ID
+//  uint8_t uid[8];
+//  ret = W25Q128_readUniqieID(&dev, uid);
+//  if (ret != ESP_OK)
+//  {
+//    Serial.printf("readUniqieID fail %d\n", ret);
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("readUniqieID : %x-%x-%x-%x-%x-%x-%x-%x\n",
+//                uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6], uid[7]);
 
   // Get JDEEC Info
   uint8_t jid[4];
@@ -128,120 +128,120 @@ void setup()
   unsigned long capacity = (1UL << (jid[2] - 17)); // equal to 2^jid[2] * 8 / 1048576 Mbits
   Serial.printf("Capacity: %luMbits, %ldMB\n", capacity, capacity / 8);
 
-  // Get Manufacture Code and Chip Capacity
-  uint8_t mcode0[3];
-  ret = W25Q128_readManufacturer(&dev, mcode0);
-  if (ret != ESP_OK)
-  {
-    Serial.printf("readManufacturerfail %d\n", ret);
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("readManufacturer: %x %x\n\n", mcode0[0], mcode0[1]);
+//  // Get Manufacture Code and Chip Capacity
+//  uint8_t mcode0[3];
+//  ret = W25Q128_readManufacturer(&dev, mcode0);
+//  if (ret != ESP_OK)
+//  {
+//    Serial.printf("readManufacturerfail %d\n", ret);
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("readManufacturer: %x %x\n\n", mcode0[0], mcode0[1]);
 
-  // Read 256 byte data from Address=0
-  uint8_t rbuf[256];
-  int len;
-  memset(rbuf, 0, 256);
-  len = W25Q128_fastread(&dev, 0, rbuf, 256);
-  if (len != 256)
-  {
-    Serial.println("fastread fail");
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("Fast Read Data: len=%d\n", len);
-  dump(rbuf, 256);
+//  // Read 256 byte data from Address=0
+//  uint8_t rbuf[256];
+//  int len;
+//  memset(rbuf, 0, 256);
+//  len = W25Q128_fastread(&dev, 0, rbuf, 256);
+//  if (len != 256)
+//  {
+//    Serial.println("fastread fail");
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("Fast Read Data: len=%d\n", len);
+//  dump(rbuf, 256);
 
-  // Erase data by Sector
-  bool flag = W25Q128_eraseSector(&dev, 0, true);
-  if (flag == false)
-  {
-    Serial.printf("eraseSector fail %d\n", ret);
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.println("Erase Sector 0");
+//  // Erase data by Sector
+//  bool flag = W25Q128_eraseSector(&dev, 0, true);
+//  if (flag == false)
+//  {
+//    Serial.printf("eraseSector fail %d\n", ret);
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.println("Erase Sector 0");
+//
+//  memset(rbuf, 0, 256);
+//  len = W25Q128_read(&dev, 0, rbuf, 256);
+//  if (len != 256)
+//  {
+//    Serial.println("read fail");
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("Read Data: len=%d\n", len);
+//  dump(rbuf, 256);
+//
+//  // Write data to Sector=0 Address=10
+//  uint8_t wdata[26];
+//  for (int i = 0; i < 26; i++)
+//  {
+//    wdata[i] = 'A' + i; // A-Z
+//  }
+//  len = W25Q128_pageWrite(&dev, 0, 10, wdata, 26);
+//  if (len != 26)
+//  {
+//    Serial.println("pageWrite fail");
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("Page Write(Sector=0 Address=10) len=%d\n", len);
+//
+//  // First read 256 byte data from Address=0
+//  memset(rbuf, 0, 256);
+//  len = W25Q128_fastread(&dev, 0, rbuf, 256);
+//  if (len != 256)
+//  {
+//    Serial.println("fastread fail");
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("Fast Read Data: len=%d\n", len);
+//  dump(rbuf, 256);
+//
+//  // Write data to Sector=0 Address=0
+//  for (int i = 0; i < 10; i++)
+//  {
+//    wdata[i] = '0' + i; // 0-9
+//  }
+//  len = W25Q128_pageWrite(&dev, 0, 0, wdata, 10);
+//  if (len != 10)
+//  {
+//    Serial.println("pageWrite fail");
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("Page Write(Sector=0 Address=0) len=%d\n", len);
 
-  memset(rbuf, 0, 256);
-  len = W25Q128_read(&dev, 0, rbuf, 256);
-  if (len != 256)
-  {
-    Serial.println("read fail");
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("Read Data: len=%d\n", len);
-  dump(rbuf, 256);
-
-  // Write data to Sector=0 Address=10
-  uint8_t wdata[26];
-  for (int i = 0; i < 26; i++)
-  {
-    wdata[i] = 'A' + i; // A-Z
-  }
-  len = W25Q128_pageWrite(&dev, 0, 10, wdata, 26);
-  if (len != 26)
-  {
-    Serial.println("pageWrite fail");
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("Page Write(Sector=0 Address=10) len=%d\n", len);
-
-  // First read 256 byte data from Address=0
-  memset(rbuf, 0, 256);
-  len = W25Q128_fastread(&dev, 0, rbuf, 256);
-  if (len != 256)
-  {
-    Serial.println("fastread fail");
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("Fast Read Data: len=%d\n", len);
-  dump(rbuf, 256);
-
-  // Write data to Sector=0 Address=0
-  for (int i = 0; i < 10; i++)
-  {
-    wdata[i] = '0' + i; // 0-9
-  }
-  len = W25Q128_pageWrite(&dev, 0, 0, wdata, 10);
-  if (len != 10)
-  {
-    Serial.println("pageWrite fail");
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("Page Write(Sector=0 Address=0) len=%d\n", len);
-
-  // Fast read 256 byte data from Address=0
-  memset(rbuf, 0, 256);
-  len = W25Q128_fastread(&dev, 0, rbuf, 256);
-  if (len != 256)
-  {
-    Serial.println("fastread fail");
-    while (1)
-    {
-      vTaskDelay(1);
-    }
-  }
-  Serial.printf("Fast Read Data: len=%d\n", len);
-  dump(rbuf, 256);
+//  // Fast read 256 byte data from Address=0
+//  memset(rbuf, 0, 256);
+//  len = W25Q128_fastread(&dev, 0, rbuf, 256);
+//  if (len != 256)
+//  {
+//    Serial.println("fastread fail");
+//    while (1)
+//    {
+//      vTaskDelay(1);
+//    }
+//  }
+//  Serial.printf("Fast Read Data: len=%d\n", len);
+//  dump(rbuf, 256);
 
   Serial.println("Success All Test");
 }

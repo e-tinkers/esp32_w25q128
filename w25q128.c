@@ -32,7 +32,7 @@ extern "C"
 #define HOST_ID SPI3_HOST // the new name of VSPI
 #endif
 
-	static const int SPI_Frequency = 40000000;
+	static const int SPI_Frequency = 1000000;
 
 	void W25Q128_dump(const char *id, uint8_t *data, int len) {
 		printf("[%s] ", id);
@@ -42,12 +42,6 @@ extern "C"
 	}
 
 	void W25Q128_init(W25Q128_t *dev) {
-		ESP_LOGI(TAG, "MISO_GPIO=%d", CONFIG_MISO_GPIO);
-		ESP_LOGI(TAG, "MOSI_GPIO=%d", CONFIG_MOSI_GPIO);
-		ESP_LOGI(TAG, "SCLK_GPIO=%d", CONFIG_SCLK_GPIO);
-		ESP_LOGI(TAG, "CS_GPIO=%d", CONFIG_CS_GPIO);
-		ESP_LOGI(TAG, "IO2_GPIO=%d", CONFIG_QUADWP_GPIO);
-		ESP_LOGI(TAG, "IO3_GPIO=%d", CONFIG_QUADHD_GPIO);
 
 		esp_err_t ret;
 
@@ -72,7 +66,7 @@ extern "C"
 		assert(ret == ESP_OK);
 
 		spi_device_interface_config_t devcfg = {
-      .mode = 0,                       // SPI MODE0
+      .mode = 3,                       // Both SPI MODE0 or MODE3 work
 			.clock_speed_hz = SPI_Frequency, // same as APB_CLK_FREQ / (10 - SPI_MASTER_20M)
 			.spics_io_num = CONFIG_CS_GPIO,
 			.queue_size = 7                  // maximum handle 7 transactions
